@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Color Contrast Checker - WCAG Accessibility</title>
+<meta name="description" content='Check the contrast ratio between two colors and see if it passes WCAG AA and AAA accessibility standards.'>
+<meta name="google-site-verification" content="REPLACE_ME">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    :root{
+      --bg:#0d0f11;--panel:#15181b;--line:#262b30;--text:#d8dee3;
+      --muted:#7c8791;--accent:#5ec9a6;--accent2:#e8b34f;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;line-height:1.5;padding:32px 16px 64px;}
+    .wrap{max-width:640px;margin:0 auto;}
+    h1{font-size:20px;margin:0 0 6px;color:#fff;font-weight:600;}
+    .desc{color:var(--muted);font-size:13px;margin:0 0 24px;}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:20px;}
+    label{display:block;font-size:12px;color:var(--muted);margin:14px 0 6px;}
+    label:first-child{margin-top:0;}
+    input, select{width:100%;background:#0a0c0e;border:1px solid var(--line);color:var(--text);padding:9px 10px;border-radius:4px;font-family:inherit;font-size:14px;}
+    input[type=file]{padding:8px;}
+    input[type=color]{padding:2px;height:38px;}
+    input:focus, select:focus{outline:1px solid var(--accent);}
+    button{margin-top:18px;width:100%;background:var(--accent);color:#08110d;border:none;padding:11px;border-radius:4px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;}
+    button:hover{opacity:0.9;}
+    .result{margin-top:18px;padding:14px;border:1px dashed var(--line);border-radius:4px;font-size:14px;min-height:20px;}
+    .result .big{font-size:22px;color:var(--accent2);font-weight:600;display:block;margin-bottom:4px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+    th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;}
+    th{color:var(--muted);font-weight:600;}
+    .note{color:var(--muted);font-size:12px;margin-top:20px;}
+    a{color:var(--accent);}
+    .swatch{width:26px;height:26px;border-radius:4px;display:inline-block;vertical-align:middle;margin-right:8px;border:1px solid var(--line);}
+    canvas{max-width:100%;border-radius:4px;border:1px solid var(--line);background:#000;}
+    .two-col{display:flex;gap:12px;flex-wrap:wrap;}
+    .two-col > div{flex:1;min-width:140px;}
+    .row{display:flex;align-items:center;padding:4px 0;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Color Contrast Checker (WCAG)</h1>
+  <p class="desc">Enter a foreground and background color to check WCAG contrast compliance.</p>
+  <div class="panel">
+    
+    <label for="fg">Text color</label>
+    <input type="color" id="fg" value="#d8dee3">
+    <label for="bg">Background color</label>
+    <input type="color" id="bg" value="#0d0f11">
+  
+    <button onclick="calc()">Calculate</button>
+    <div class="result" id="result"></div>
+  </div>
+  <p class="note">Estimate only. Values may vary slightly depending on the source image and browser.</p>
+</div>
+<script>
+
+function hexToRgb(hex){
+  hex = hex.replace('#','');
+  return [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+}
+function relLuminance(rgb){
+  var i, c, arr = [];
+  for (i=0;i<3;i++){
+    c = rgb[i]/255;
+    arr.push(c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4));
+  }
+  return 0.2126*arr[0] + 0.7152*arr[1] + 0.0722*arr[2];
+}
+function calc(){
+  var fg = hexToRgb(document.getElementById('fg').value);
+  var bg = hexToRgb(document.getElementById('bg').value);
+  var l1 = relLuminance(fg), l2 = relLuminance(bg);
+  var lighter = Math.max(l1,l2), darker = Math.min(l1,l2);
+  var ratio = (lighter+0.05)/(darker+0.05);
+  var aaNormal = ratio >= 4.5, aaaNormal = ratio >= 7, aaLarge = ratio >= 3;
+  var result = document.getElementById('result');
+  result.innerHTML = '<span class="big">' + ratio.toFixed(2) + ':1</span>' +
+    'AA normal text: ' + (aaNormal ? 'Pass' : 'Fail') + '<br>' +
+    'AAA normal text: ' + (aaaNormal ? 'Pass' : 'Fail') + '<br>' +
+    'AA large text: ' + (aaLarge ? 'Pass' : 'Fail');
+}
+
+</script>
+</body>
+</html>
